@@ -1,0 +1,19 @@
+networks:
+  demo_network:
+volumes:
+  demo_volume:
+
+services:
+  db:
+    image: postgres:9.6-alpine
+    volumes:
+      - demo_volume:/var/lib/postgresql/data/
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      - demo_network
