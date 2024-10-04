@@ -20,5 +20,5 @@ spring:
     hibernate:
       ddl-auto: none
 
-  secutity:
+  security:
     jwt-secret: ${JWT_SECRET}

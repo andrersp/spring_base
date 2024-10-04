@@ -1,7 +1,7 @@
 package com.example.demo.infra.api.config;
 
-import com.example.demo.infra.api.controllers.ResponseData;
-import com.example.demo.infra.api.security.JwtValidation;
+import com.example.demo.application.security.AuthenticationService;
+import com.example.demo.domain.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,40 +16,29 @@ import java.io.IOException;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-    private final JwtValidation jwtValidation;
+    private final AuthenticationService jwtValidation;
 
-    public JwtFilter(JwtValidation jwtValidation) {
+    public JwtFilter(AuthenticationService jwtValidation) {
         this.jwtValidation = jwtValidation;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         String token;
         String authorizationHeader = request.getHeader("Authorization");
 
         if (authorizationHeader != null) {
-            token = authorizationHeader.replace("Bearer ", "");
-            try {
-                this.jwtValidation.validate(token);
-                ResponseData responseData = new ResponseData("Andre Luis", "Franca");
-                //        var authentication = UsernamePasswordAuthenticationToken.authenticated(new ResponseData("andre", "franca"), "", null);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(responseData, null, null);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (Exception e) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-            System.out.println(token);
+            token = authorizationHeader.replace("Bearer ", "").trim();
+            this.jwtValidation.validateToken(token);
 
+            User responseData = new User("Andre Luis", "Franca", token);
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(responseData, null, null);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-        logger.info(authorizationHeader);
-
 
         filterChain.doFilter(request, response);
-
-
     }
 }
